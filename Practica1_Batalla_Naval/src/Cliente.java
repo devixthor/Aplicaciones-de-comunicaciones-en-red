@@ -13,7 +13,7 @@ public class Cliente {
         Scanner sc = new Scanner(System.in);
         JSON embarcacionEnviada = new JSON();
         String coordenadasEmbarcacion;
-        List<Embarcacion> embarcaciones = new ArrayList<>();
+        List<Embarcacion> misEmbarcaciones = new ArrayList<>();
         Embarcacion s = new Embarcacion("submarino");
         int x1,x2,y1,y2;
         boolean terminarCoordenadas = false;
@@ -47,7 +47,7 @@ public class Cliente {
             }
 
             s.agregarCoordenadas(filaSub, columnaSub);
-            embarcaciones.add(s);
+            misEmbarcaciones.add(s);
             String jsonSub = embarcacionEnviada.generarJSON(filaSub, columnaSub);
             dos.writeUTF(jsonSub);
             dos.flush();
@@ -67,6 +67,8 @@ public class Cliente {
                 System.out.printf("Columna final: ");
                 y2 = sc.nextInt();
 
+                Embarcacion d = Embarcacion.agregarEmbarcacionLista("destructor", x1, x2, y1, y2);
+                misEmbarcaciones.add(d);
                 coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1,x2,y1,y2);
                 dos.writeUTF(coordenadasEmbarcacion);
                 dos.flush();
@@ -93,6 +95,8 @@ public class Cliente {
                 System.out.printf("Columna final: ");
                 y2 = sc.nextInt();
 
+                Embarcacion c = Embarcacion.agregarEmbarcacionLista("crucero", x1, x2, y1,y2);
+                misEmbarcaciones.add(c);
                 coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1,x2,y1,y2);
                 dos.writeUTF(coordenadasEmbarcacion);
                 dos.flush();
@@ -114,10 +118,19 @@ public class Cliente {
             System.out.printf("Columna final: ");
             y2 = sc.nextInt();
             coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1,x2,y1,y2);
+            Embarcacion a = Embarcacion.agregarEmbarcacionLista("acorazado", x1, x2, y1, y2);
+            misEmbarcaciones.add(a);
+
             dos.writeUTF(coordenadasEmbarcacion);
             dos.flush();
+
             tableroRecibido = dis.readUTF();
             System.out.println(tableroRecibido);
+
+            for(Embarcacion coords: misEmbarcaciones){
+                coords.imprimirCoordenadas();
+            }
+
             dos.close();
             cl.close();
 

@@ -69,24 +69,7 @@ public class Servidor {
                     colFin = jsonNode.get("columna fin").asInt();
 
                     System.out.println("El rango del destructor " + (contadorEmbarcaciones + 1) + " es: (" + filaInicio + "," + colInicio + "),(" + filaFin + "," + colFin + ")");
-
-                    Embarcacion des = new Embarcacion("destructor");
-                    if (filaInicio == filaFin) {
-                        int inicio = Math.min(colInicio, colFin);
-                        int fin = Math.max(colInicio, colFin);
-                        for (i = inicio; i <= fin; i++) {
-                            des.agregarCoordenadas(filaInicio, i);
-                            tablero.registrarTiro(filaInicio, i, "D");
-                        }
-                    }
-                    else if (colInicio == colFin) {
-                        int inicio = Math.min(filaInicio, filaFin);
-                        int fin = Math.max(filaInicio, filaFin);
-                        for (i = inicio; i <= fin; i++) {
-                            des.agregarCoordenadas(i, colInicio);
-                            tablero.registrarTiro(i, colInicio, "D");
-                        }
-                    }
+                    Embarcacion des = Embarcacion.colocarEmbarcacion("destructor", "D", filaInicio, filaFin, colInicio, colFin, tablero);
                     embarcacionesCliente.add(des);
                     contadorEmbarcaciones++;
                     if(contadorEmbarcaciones == 3) terminarCoordenadas = true;
@@ -108,25 +91,7 @@ public class Servidor {
                     colFin = jsonNode.get("columna fin").asInt();
 
                     System.out.println("El rango del crucero " + (contadorEmbarcaciones + 1) + " es: (" + filaInicio + "," + colInicio + "),(" + filaFin + "," + colFin + ")");
-
-                    Embarcacion cru = new Embarcacion("crucero");
-                    if (filaInicio == filaFin) {
-                        int inicio = Math.min(colInicio, colFin);
-                        int fin = Math.max(colInicio, colFin);
-                        for (i = inicio; i <= fin; i++) {
-                            cru.agregarCoordenadas(filaInicio, i);
-                            tablero.registrarTiro(filaInicio, i, "C");
-                        }
-                    }
-                    else if (colInicio == colFin) {
-                        int inicio = Math.min(filaInicio, filaFin);
-                        int fin = Math.max(filaInicio, filaFin);
-                        for (i = inicio; i <= fin; i++) {
-                            cru.agregarCoordenadas(i, colInicio);
-                            tablero.registrarTiro(i, colInicio, "C");
-                        }
-                    }
-
+                    Embarcacion cru = Embarcacion.colocarEmbarcacion("embarcacion", "C", filaInicio, filaFin, colInicio, colFin, tablero);
                     embarcacionesCliente.add(cru);
                     contadorEmbarcaciones++;
                     if(contadorEmbarcaciones == 2) terminarCoordenadas = true;
@@ -144,23 +109,8 @@ public class Servidor {
                 colFin = jsonNode.get("columna fin").asInt();
 
                 System.out.println("El rango del acorazado es: (" + filaInicio + "," + colInicio + "),(" + filaFin + "," + colFin + ")");
-                Embarcacion aco = new Embarcacion("acorazado");
-                if (filaInicio == filaFin) {
-                    int inicio = Math.min(colInicio, colFin);
-                    int fin = Math.max(colInicio, colFin);
-                    for (i = inicio; i <= fin; i++) {
-                        aco.agregarCoordenadas(filaInicio, i);
-                        tablero.registrarTiro(filaInicio, i, "A");
-                    }
-                }
-                else if (colInicio == colFin) {
-                    int inicio = Math.min(filaInicio, filaFin);
-                    int fin = Math.max(filaInicio, filaFin);
-                    for (i = inicio; i <= fin; i++) {
-                        aco.agregarCoordenadas(i, colInicio);
-                        tablero.registrarTiro(i, colInicio, "A");
-                    }
-                }
+                Embarcacion aco = Embarcacion.colocarEmbarcacion("acorazado", "A", filaInicio, filaFin, colInicio, colFin, tablero);
+                embarcacionesCliente.add(aco);
 
                 dos.writeUTF(tablero.actualizarTablero());
                 dos.flush();
