@@ -1,72 +1,42 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Cliente {
     static boolean[][] ocupado = new boolean[10][10];
 
-    static boolean validaciones(int x1, int y1, int x2, int y2, int longitud, String nombre) {
-
-        if (x1 < 0 || x1 >= 10 || x2 < 0 || x2 >= 10 || y1 < 0 || y1 >= 10 || y2 < 0 || y2 >= 10) {
-            System.out.println("Fuera de rango del tablero.");
-            return false;
-        }
-
-        if (x1 != x2 && y1 != y2) {
-            System.out.println("El barco no puede estar en diagonal.");
-            return false;
-        }
-
-        if (Math.abs(x2 - x1) + Math.abs(y2 - y1) != longitud - 1) {
-            System.out.println("Longitud incorrecta, se deben ocupar " + longitud + " casillas.");
-            return false;
-        }
-
-        int pasoX = Integer.compare(x2, x1);
-        int pasoY = Integer.compare(y2, y1);
-        int fila = x1;
-        int columna = y1;
-
-        for (int i = 0; i < longitud; i++) {
-            if (ocupado[fila][columna]==true) {
-                System.out.println("La casilla ya está ocupada por otro barco.");
-                return false;
-            }
-            fila += pasoX;
-            columna += pasoY;
-        }
-        return true;
-    }
-
-    static void ocuparBarco(int x1, int y1, int x2, int y2, int longitud) {
-
-        int pasoX = Integer.compare(x2, x1);
-        int pasoY = Integer.compare(y2, y1);
-        int fila = x1;
-        int columna = y1;
-
-        for (int i = 0; i < longitud; i++) {
-            ocupado[fila][columna] = true;
-            fila += pasoX;
-            columna += pasoY;
-        }
-    }
-
     static void main() {
-        String tableroRecibido;
+        //Tableros del cliente
+        boolean[][] disparado = new boolean[10][10];
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode;
+        Tablero miTablero = new Tablero(10,10);
+        Tablero misTiros = new Tablero(10,10);
+
         Scanner sc = new Scanner(System.in);
-        JSON embarcacionEnviada = new JSON();
-        String coordenadasEmbarcacion;
-        List<Embarcacion> embarcaciones = new ArrayList<>();
-        Embarcacion s = new Embarcacion("submarino");
+        String tiroGenerado;
+
+        List<Embarcacion> misEmbarcaciones = new ArrayList<>();
         int x1,x2,y1,y2;
         boolean terminarCoordenadas = false;
+        boolean subCorrecto = false;
         int contadorEmbarcaciones = 0;
+        int contadorImpactos = 0;
+
+        boolean miTurno;
+        boolean terminarJuego = false;
+        boolean embarcacionHundida, tiroAcertado = false;
+        int filaTiroRecibido, colTiroRecibido;
+        Embarcacion embarcacionGolpeada = null;
+        String tiroRecibido, respuesta;
+        boolean tiroCorrecto;
 
         try{
             Socket cl = new Socket("127.0.0.1", 1234);
@@ -80,38 +50,40 @@ public class Cliente {
             System.out.println(mensajeRecibido);
             System.out.println(mensajeTableroRecibido);
 
-            String tableroInicialRecibido = dis.readUTF();
-            System.out.println(tableroInicialRecibido);
-            boolean sub = false;
+            Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
-            //while(!terminarCoordenadas){
+            boolean subm = false;
+
+            //REGISTRAR SUBMARINO
+            //------------------------------------------------------------------------------------------------------------------
             System.out.printf("Ingresa la fila del submarino: ");
             int filaSub = sc.nextInt();
 
             System.out.printf("ingresa la columna del submarino: ");
             int columnaSub = sc.nextInt();
 
-            if(filaSub < 0 | filaSub > 10 | columnaSub < 0 | columnaSub > 10 ){
-                System.out.println("Error: Coordenada fuera de rango");
-                //continue;
+            while(!subCorrecto){
+                if(filaSub < 0 | filaSub > 10 | columnaSub < 0 | columnaSub > 10 ){
+                    System.out.println("Error: Coordenada fuera de rango");
+                }
+                subCorrecto = true;
             }
 
-            if (ocupado[filaSub][columnaSub]) {
-                System.out.println("Casilla ocupada.");
-            }
-
-            s.agregarCoordenadas(filaSub, columnaSub);
-            embarcaciones.add(s);
+            Embarcacion sub = new Embarcacion("Submarino");
+            sub.agregarCoordenadas(filaSub, columnaSub);
+            misEmbarcaciones.add(sub);
             ocupado[filaSub][columnaSub] = true;
-            String jsonSub = embarcacionEnviada.generarJSON(filaSub, columnaSub);
-            dos.writeUTF(jsonSub);
-            dos.flush();
+            miTablero.registrarSimbolo(filaSub, columnaSub, "S");
+            miTablero.actualizarTablero();
+            //------------------------------------------------------------------------------------------------------------------
 
-            sub = true;
+            subm = true;
 
-            tableroRecibido = dis.readUTF();
-            System.out.println(tableroRecibido);
+            //ACTUALIZAR TABLERO
+            Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
+            //REGISTRAR DESTRUCTORES
+            //------------------------------------------------------------------------------------------------------------------
             System.out.println("Ingresa las coordenadas de tus 3 destructores (2 casillas de longitud)");
             while(!terminarCoordenadas){
                 System.out.println("Rango de coordenadas del destructor " + (contadorEmbarcaciones + 1));
@@ -124,29 +96,29 @@ public class Cliente {
                 System.out.printf("Columna final: ");
                 y2 = sc.nextInt();
 
-                if (!validaciones(x1, y1, x2, y2, 2, "destructor")) {
+                if (!Embarcacion.validaciones(x1, y1, x2, y2, 2, "destructor", ocupado)) {
                     continue;
                 }
                 // y si sí?
-                ocuparBarco(x1, y1, x2, y2, 2);
-
-                coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1, x2, y1, y2);
-
-                dos.writeUTF(coordenadasEmbarcacion);
-                dos.flush();
+                Embarcacion.ocuparBarco(x1, y1, x2, y2, 2, ocupado);
+                Embarcacion des = Embarcacion.colocarEmbarcacion("Destructor", "D", x1, x2, y1, y2, miTablero);
+                misEmbarcaciones.add(des);
                 contadorEmbarcaciones++;
 
                 if (contadorEmbarcaciones == 3) {
                     terminarCoordenadas = true;
                 }
             }
+            //------------------------------------------------------------------------------------------------------------------
 
-            tableroRecibido = dis.readUTF();
-            System.out.println(tableroRecibido);
+            //ACTUALIZAR TABLERO
+            Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
             contadorEmbarcaciones = 0;
             terminarCoordenadas = false;
 
+            //REGISTRAR CRUCEROS
+            //------------------------------------------------------------------------------------------------------------------
             System.out.println("Ingresa las coordenadas de tus 2 cruceros (3 casillas de longitud");
             while (!terminarCoordenadas){
                 System.out.println("Rango de coordenadas del crucero " + (contadorEmbarcaciones + 1));
@@ -159,24 +131,26 @@ public class Cliente {
                 System.out.printf("Columna final: ");
                 y2 = sc.nextInt();
 
-                if (!validaciones(x1, y1, x2, y2, 3, "crucero")) {
+                if (!Embarcacion.validaciones(x1, y1, x2, y2, 3, "crucero", ocupado)) {
                     continue;
                 }
 
-                ocuparBarco(x1, y1, x2, y2, 3);
-                coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1, x2, y1, y2);
-                dos.writeUTF(coordenadasEmbarcacion);
-                dos.flush();
-
+                Embarcacion.ocuparBarco(x1, y1, x2, y2, 3, ocupado);
+                Embarcacion cru = Embarcacion.colocarEmbarcacion("Crucero", "C", x1, x2, y1, y2, miTablero);
+                misEmbarcaciones.add(cru);
                 contadorEmbarcaciones++;
 
                 if (contadorEmbarcaciones == 2) {
                     terminarCoordenadas = true;
                 }
             }
+            //------------------------------------------------------------------------------------------------------------------
 
-            tableroRecibido = dis.readUTF();
-            System.out.println(tableroRecibido);
+            //ACTUALIZAR TABLERO
+            Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
+
+            //REGISTRAR ACORAZADO
+            //------------------------------------------------------------------------------------------------------------------
             do {
                 System.out.println("Ingresa las coordenadas de tu acorazado (4 casillas de longitud)");
                 System.out.printf("Fila inicial: ");
@@ -187,16 +161,157 @@ public class Cliente {
                 x2 = sc.nextInt();
                 System.out.printf("Columna final: ");
                 y2 = sc.nextInt();
-            }while (!validaciones(x1, y1, x2, y2, 4, "acorazado"));
+            }while (!Embarcacion.validaciones(x1, y1, x2, y2, 4, "acorazado", ocupado));
+            //------------------------------------------------------------------------------------------------------------------
 
-            ocuparBarco(x1, y1, x2, y2, 4);
+            Embarcacion.ocuparBarco(x1, y1, x2, y2, 4, ocupado);
+            Embarcacion aco = Embarcacion.colocarEmbarcacion("Acorazado", "A", x1, x2, y1, y2, miTablero);
+            misEmbarcaciones.add(aco);
+            Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
-            coordenadasEmbarcacion = embarcacionEnviada.jsonRango(x1, x2, y1, y2);
-
-            dos.writeUTF(coordenadasEmbarcacion);
+            System.out.println("Has terminado de colocar tus embarcaciones. Escribe [listo] cuando estes listo para iniciar");
+            sc.nextLine();
+            String avisoListo = sc.nextLine().trim().toLowerCase();
+            dos.writeUTF(avisoListo);
             dos.flush();
-            tableroRecibido = dis.readUTF();
-            System.out.println(tableroRecibido);
+
+            System.out.println("Calculando quien empieza...");
+            int turnoAleatorio = dis.readInt();
+
+            if (turnoAleatorio == 0){
+                System.out.println("La PC tira primero");
+                miTurno = false;
+            }else {
+                System.out.println("Tu tiras primero");
+                miTurno = true;
+            }
+
+            while(!terminarJuego){
+                if (!miTurno){
+                    tiroRecibido = dis.readUTF();
+                    jsonNode = objectMapper.readTree(tiroRecibido);
+                    filaTiroRecibido = jsonNode.get("fila").asInt();
+                    colTiroRecibido = jsonNode.get("columna").asInt();
+
+                    tiroAcertado = false;
+                    embarcacionGolpeada = null;
+
+                    for(Embarcacion embarcacion: misEmbarcaciones){
+                        if(embarcacion.recibioImpacto(filaTiroRecibido, colTiroRecibido)){
+                            tiroAcertado = true;
+                            embarcacionGolpeada = embarcacion;
+                            break;
+                        }
+                    }
+
+                    miTablero.registrarSimbolo(filaTiroRecibido, colTiroRecibido, tiroAcertado ? "X" : "O");
+
+                    boolean hundida = tiroAcertado && embarcacionGolpeada.esHundido();
+                    if(hundida) System.out.printf("Se ha hundido un " + embarcacionGolpeada.getNombre());
+
+                    boolean todasHundidas = true;
+                    for(Embarcacion embarcacion: misEmbarcaciones){
+                        if(!embarcacion.esHundido()){
+                            todasHundidas = false;
+                            break;
+                        }
+                    }
+                    respuesta = JSON.jsonAciertos(embarcacionGolpeada,hundida, todasHundidas);
+                    dos.writeUTF(respuesta);
+                    dos.flush();
+                    Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
+
+                    if(todasHundidas){
+                        System.out.printf("Ha ganado la PC");
+                        terminarJuego = true;
+                    }else{
+                        contadorImpactos++;
+                        if(!tiroAcertado || contadorImpactos == 3){
+                            miTurno = true;
+                            contadorImpactos = 0;
+                        }
+                    }
+                }else{
+                    tiroCorrecto = false;
+                    int tiroFila = 0, tiroColumna = 0;
+
+                    while (!tiroCorrecto) {
+                        System.out.print("Ingresa la fila de tiro: ");
+                        tiroFila = sc.nextInt();
+                        System.out.print("Ingresa la columna de tiro: ");
+                        tiroColumna = sc.nextInt();
+
+                        if (tiroFila < 0 || tiroFila > 9 || tiroColumna < 0 || tiroColumna > 9) {
+                            System.out.println("Error: Coordenada fuera de rango (0-9)");
+                        } else if (disparado[tiroFila][tiroColumna]) {
+                            System.out.println("Error: Ya disparaste a esa casilla");
+                        } else {
+                            tiroCorrecto = true;
+                        }
+                    }
+
+                    disparado[tiroFila][tiroColumna] = true;
+                    tiroGenerado = JSON.generarJSON(tiroFila, tiroColumna);
+                    dos.writeUTF(tiroGenerado);
+                    dos.flush();
+
+                    String resultado = dis.readUTF();
+                    jsonNode = objectMapper.readTree(resultado);
+
+                    String barco = jsonNode.hasNonNull("embarcacion")
+                            ? jsonNode.get("embarcacion").asText()
+                            : null;
+
+                    boolean golpeado = jsonNode.get("acierto").asBoolean();
+                    boolean fin = jsonNode.get("fin").asBoolean();
+                    boolean hundida = jsonNode.get("hundida").asBoolean();
+
+                    misTiros.registrarSimbolo(tiroFila, tiroColumna, golpeado ? "X" : "O");
+
+                    if (hundida && jsonNode.hasNonNull("coordenadas")) {
+                        for (JsonNode par : jsonNode.get("coordenadas")) {
+                            misTiros.registrarSimbolo(par.get(0).asInt(), par.get(1).asInt(), "#");
+                        }
+                    }
+
+                    if (hundida && jsonNode.hasNonNull("coordenadas")) {
+                        for (JsonNode par : jsonNode.get("coordenadas")) {
+                            misTiros.registrarSimbolo(par.get(0).asInt(), par.get(1).asInt(), "#");
+                        }
+                    }
+
+                    Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
+
+                    if (golpeado) {
+                        System.out.println("Golpeaste a un " + barco + " en la coordenada (" + tiroFila + "," + tiroColumna + ")");
+                        if (hundida) {
+                            System.out.println("Hundiste un " + barco);
+                        }
+                        contadorImpactos++;
+                        if (!fin && contadorImpactos < 3) {
+                            System.out.println("Tira de nuevo");
+                        }
+                    } else {
+                        System.out.println("Tiro fallado");
+                        System.out.println("Turno de la PC");
+                    }
+
+                    if (fin){
+                        System.out.println("Has ganado");
+                        terminarJuego = true;
+                    }
+
+                    if (!golpeado || contadorImpactos >= 3) {
+                        if (golpeado && !fin) {
+                            System.out.println("Has usado tus 3 tiros. Turno de la PC");
+                        }
+                        miTurno = false;
+                        contadorImpactos = 0;
+                    }
+                }
+            }
+
+            dis.close();
             dos.close();
             cl.close();
 
