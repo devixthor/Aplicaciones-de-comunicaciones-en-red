@@ -1,7 +1,7 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 
 public class JSON {
     static ObjectMapper objectMapper = new ObjectMapper();
@@ -11,7 +11,7 @@ public class JSON {
     public JSON() {
     }
 
-    public String generarJSON(int fila, int columna){
+    static String generarJSON(int fila, int columna){
         String resultado = null;
         try{
             ObjectNode objectoJson = objectMapper.createObjectNode();
@@ -24,21 +24,28 @@ public class JSON {
         return resultado;
     }
 
-    public String jsonRango (int x1, int x2, int y1, int y2){
+    static String jsonAciertos(Embarcacion embarcacion, boolean hundida, boolean terminarJuego){
         String resultado = null;
         try{
-            ObjectNode objectoJson = objectMapper.createObjectNode();
-            objectoJson.put("fila inicio", x1);
-            objectoJson.put("fila fin", x2);
-            objectoJson.put("columna inicio", y1);
-            objectoJson.put("columna fin", y2);
-            resultado =  objectMapper.writeValueAsString(objectoJson);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+           ObjectNode objectoJson = objectMapper.createObjectNode();
+           boolean acierto =(embarcacion != null);
+           objectoJson.put("acierto", acierto);
+           objectoJson.put("hundida", hundida);
+           objectoJson.put("fin", terminarJuego);
+           if (acierto){
+               objectoJson.put("embarcacion", embarcacion.getNombre());
+           }
+           if(hundida){
+               ArrayNode coords = objectoJson.putArray("coordenadas");
+               for (int[] c : embarcacion.getCoordenadas()) {
+                   coords.add(objectMapper.createArrayNode().add(c[0]).add(c[1]));
+               }
+           }
+
+           resultado = objectMapper.writeValueAsString(objectoJson);
+       }catch (Exception e){
+           e.printStackTrace();
+       }
         return resultado;
     }
-
-
-
 }
