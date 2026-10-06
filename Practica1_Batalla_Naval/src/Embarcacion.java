@@ -96,6 +96,7 @@ public class Embarcacion {
             return false;
         }
 
+
         if (x1 != x2 && y1 != y2) {
             System.out.println("El barco no puede estar en diagonal.");
             return false;

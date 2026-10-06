@@ -35,15 +35,29 @@ public class Servidor {
 
         try {
             ServerSocket s = new ServerSocket(1234);
-            System.out.println("Servidor iniciado en el puerto " + s.getLocalPort());
+            System.out.println(Colores.CYAN + Colores.NEGRITA);
+            System.out.println("╔══════════════════════════════════════════╗");
+            System.out.println("║                                          ║");
+            System.out.println("║        ⚓ SERVIDOR - BATALLA NAVAL ⚓    ║");
+            System.out.println("║                                          ║");
+            System.out.println("╚══════════════════════════════════════════╝");
+            System.out.println(Colores.RESET);
+
+            System.out.println(Colores.VERDE + "Servidor iniciado en el puerto " + s.getLocalPort() + Colores.RESET);
 
             for(;;){
                 Socket cl = s.accept();
-                System.out.println("Cliente conectado desde " + cl.getInetAddress());
-                System.out.println("Generando tablero aleatorio");
+                System.out.println();
+                System.out.println(Colores.VERDE + Colores.NEGRITA);
+                System.out.println("╔══════════════════════════════════════════╗");
+                System.out.println("║          👤 JUGADOR CONECTADO           ║");
+                System.out.println("╚══════════════════════════════════════════╝");
+                System.out.println(Colores.RESET);
 
+                System.out.println(Colores.CYAN + "Dirección: " + cl.getInetAddress() + Colores.RESET);
+                System.out.println(Colores.AMARILLO + " Generando tablero aleatorio..." + Colores.RESET);
                 String mensajeBienvenida = "Bienvenido a batalla naval";
-                String mensajeTablero = "Acomoda tus tripulaciones en el tablero de la izquierda";
+                String mensajeTablero = "Acomoda tus tripulaciones en el tablero de la izquierda ↙️";
 
                 DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
                 DataInputStream dis = new DataInputStream(cl.getInputStream());
@@ -71,24 +85,34 @@ public class Servidor {
                 }
                 embarcacionesAleatorias.add(Tablero.llenarEmbarcacionAleatoria("Acorazado", 4, tableroServidor, "A", ocupado));
                 //-------------------------------------------------------------
-
+                System.out.println();
+                System.out.println(Colores.MAGENTA + Colores.NEGRITA);
+                System.out.println("╔══════════════════════════════════════════╗");
+                System.out.println("║          🤖 FLOTA DE LA PC              ║");
+                System.out.println("╚══════════════════════════════════════════╝");
+                System.out.println(Colores.RESET);
                 Tablero.imprmirTableros(tableroServidor.actualizarTablero(), tableroTiros.actualizarTablero());
 
                 //LOGICA DE JUEGO
                 //-------------------------------------------------------------
                 System.out.println("Esperando a que el usuario coloque sus embarcaciones...");
                 String confirmacion = dis.readUTF();
-                if(confirmacion.equals("listo")) {
-                    System.out.println("El usuario esta listo para jugar");
-                    System.out.println("Sorteando turno");
+                System.out.println(Colores.VERDE + "✓ Confirmación recibida: [" + confirmacion + "]" + Colores.RESET);
+                if(confirmacion.equals("listo") || confirmacion.equals("Listo") || confirmacion.equals("LISTO")) {
+                    System.out.println(Colores.VERDE + Colores.NEGRITA + "✓ ¡El jugador está listo para jugar!" + Colores.RESET);
+                    System.out.println(Colores.AMARILLO + "⚔ Sorteando quién comienza..." + Colores.RESET);
                     int turnoAleatorio = random.nextInt(2);
+
+                    System.out.println("Turno generado: " + turnoAleatorio);
                     dos.writeInt(turnoAleatorio);
                     dos.flush();
+
+                    System.out.println("Turno enviado al cliente");
                     if (turnoAleatorio == 0) {
-                        System.out.println("La PC tira primero");
+                        System.out.println(Colores.AMARILLO + "━━━━━━━━━━━━━ 🤖 La PC tira primero ━━━━━━━━━━━━━" + Colores.RESET);
                         turnoServidor = true;
                     } else {
-                        System.out.println("El usuario tira primero");
+                        System.out.println(Colores.MAGENTA + "━━━━━━━━━━━ ⚔ El jugador tira primero ━━━━━━━━━━━" + Colores.RESET);
                         turnoServidor = false;
                     }
                     while (!terminarJuego) {
@@ -140,18 +164,35 @@ public class Servidor {
                             Tablero.imprmirTableros(tableroServidor.actualizarTablero(), tableroTiros.actualizarTablero());
 
                             if(tiroAcertado){
-                                System.out.println("El usuario ha golpeado un " + embarcacionGolpeada.getNombre());
+                                System.out.println(Colores.ROJO + Colores.NEGRITA + "💥 ¡IMPACTO!, El usuario ha golpeado un " + Colores.RESET + embarcacionGolpeada.getNombre());
                                 if(hundida){
-                                    System.out.println("Se ha hundido un " + embarcacionGolpeada.getNombre());
+                                    System.out.println(Colores.ROJO + Colores.NEGRITA + " 🔥☠ ¡SE HA HUNDIDO UN " + embarcacionGolpeada.getNombre() + "!" + Colores.RESET);
                                 }
                                 if (!todasHundidas && contadorImpactos + 1 < 3) {
                                     System.out.println("El usuario debe tirar de nuevo");
                                 }
                             }else{
-                                System.out.println("El usuario ha fallado su tiro");
+                                Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/agua.wav");
+                                System.out.println(Colores.AZUL + Colores.NEGRITA + "\n🌊 ¡El usuario ha fallado su tiro! 🌊" + Colores.RESET);
                             }
 
                             if(todasHundidas){
+                                System.out.println(Colores.VERDE + Colores.NEGRITA);
+// FIN
+                                System.out.println("███████╗██╗███╗   ██╗");
+                                System.out.println("██╔════╝██║████╗  ██║");
+                                System.out.println("█████╗  ██║██╔██╗ ██║");
+                                System.out.println("██╔══╝  ██║██║╚██╗██║");
+                                System.out.println("██║     ██║██║ ╚████║");
+                                System.out.println("╚═╝     ╚═╝╚═╝  ╚═══╝");
+                                System.out.println();
+                                System.out.println("     ██╗██╗   ██╗███████╗ ██████╗  ██████╗ ");
+                                System.out.println("     ██║██║   ██║██╔════╝██╔════╝ ██╔═══██╗");
+                                System.out.println("     ██║██║   ██║█████╗  ██║  ███╗██║   ██║");
+                                System.out.println("██   ██║██║   ██║██╔══╝  ██║   ██║██║   ██║");
+                                System.out.println("╚█████╔╝╚██████╔╝███████╗╚██████╔╝╚██████╔╝");
+                                System.out.println(" ╚════╝  ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ");
+                                System.out.println(Colores.RESET);
                                 System.out.println("Ha ganado el usuario");
                                 terminarJuego = true;
                             }else{
@@ -195,19 +236,27 @@ public class Servidor {
                             }
                             Tablero.imprmirTableros(tableroServidor.actualizarTablero(), tableroTiros.actualizarTablero());
                             if(golpeado){
-                                System.out.println("La PC ha golpeado un " + barco + " en la coordenada (" + filaTiroRandom + "," + colTiroRandom + ")");
+                                System.out.println(Colores.ROJO + Colores.NEGRITA + "💥 ¡IMPACTO!, La PC ha golpeado un " + barco+ Colores.RESET + " en la coordenada (" + filaTiroRandom + "," + colTiroRandom + ")");
                                 if (hundida){
-                                    System.out.printf("La PC ha hundido un " + barco);
+                                    System.out.println(Colores.ROJO + Colores.NEGRITA + " 🔥☠ ¡LA PC HA HUNDIDO UN " + barco + "!" + Colores.RESET);
                                 }
                                 contadorImpactos++;
                                 if (!fin && contadorImpactos < 3){
                                     System.out.println("La PC tira de nuevo");
                                 }
                             }else{
-                                System.out.println("Tiro fallado");
+                                Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/agua.wav");
+                                System.out.println(Colores.AZUL + Colores.NEGRITA + "\n🌊 ¡La PC ha fallado su tiro! 🌊" + Colores.RESET);
                             }
                             if (fin){
-                                System.out.println("Ha ganado el servidor");
+                                System.out.println(Colores.VERDE + Colores.NEGRITA);
+                                System.out.println("  ██╗   ██╗██╗ ██████╗████████╗ ██████╗ ██████╗ ██╗ █████╗ ");
+                                System.out.println("  ██║   ██║██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗██║██╔══██╗");
+                                System.out.println("  ██║   ██║██║██║        ██║   ██║   ██║██████╔╝██║███████║");
+                                System.out.println("  ╚██╗ ██╔╝██║██║        ██║   ██║   ██║██╔══██╗██║██╔══██║");
+                                System.out.println("   ╚████╔╝ ██║╚██████╗   ██║   ╚██████╔╝██║  ██║██║██║  ██║");
+                                System.out.println("    ╚═══╝  ╚═╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝");
+                                System.out.println(Colores.RESET);
                                 terminarJuego = true;
                             }
 

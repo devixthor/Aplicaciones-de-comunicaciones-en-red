@@ -1,16 +1,25 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class Cliente {
     static boolean[][] ocupado = new boolean[10][10];
+    static int validarNum(Scanner sc, String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+
+            try {
+                return Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("No se aceptan letras ingresa solamente números.");
+            }
+        }
+    }
 
     static void main() {
         //Tableros del cliente
@@ -41,6 +50,17 @@ public class Cliente {
         try{
             Socket cl = new Socket("127.0.0.1", 1234);
             System.out.println("Conexion establecida con el servidor a traves del puerto: " + cl.getLocalPort() + " y la direccion: " + cl.getInetAddress());
+            System.out.println(Colores.CYAN + Colores.NEGRITA +
+                    "╔════════════════════════════════════════════════════════════╗\n" +
+                    "║                                                            ║\n" +
+                    "║             ⚓  BATALLA NAVAL CLIENTE - SERVIDOR  ⚓       ║\n" +
+                    "║                                                            ║\n" +
+                    "║                 🌊  PREPARA TU FLOTA  🌊                   ║\n" +
+                    "║                                                            ║\n" +
+                    "╚════════════════════════════════════════════════════════════╝" +
+                    Colores.RESET);
+            System.out.println(Colores.VERDE  + "Conexion establecida con el servidor" + Colores.RESET
+            );
             DataInputStream dis = new DataInputStream(cl.getInputStream());
             DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
 
@@ -56,11 +76,9 @@ public class Cliente {
 
             //REGISTRAR SUBMARINO
             //------------------------------------------------------------------------------------------------------------------
-            System.out.printf("Ingresa la fila del submarino: ");
-            int filaSub = sc.nextInt();
-
-            System.out.printf("ingresa la columna del submarino: ");
-            int columnaSub = sc.nextInt();
+            Sonidos.sonidoFondo("Practica1_Batalla_Naval/src/sonido/inicio.wav");
+            int filaSub = validarNum(sc, "Ingresa la fila del submarino: ");
+            int columnaSub = validarNum(sc, "Ingresa la columna del submarino: ");
 
             while(!subCorrecto){
                 if(filaSub < 0 | filaSub > 10 | columnaSub < 0 | columnaSub > 10 ){
@@ -84,17 +102,19 @@ public class Cliente {
 
             //REGISTRAR DESTRUCTORES
             //------------------------------------------------------------------------------------------------------------------
-            System.out.println("Ingresa las coordenadas de tus 3 destructores (2 casillas de longitud)");
+            System.out.println(Colores.AMARILLO + Colores.NEGRITA);
+            System.out.println("╔══════════════════════════════════════╗");
+            System.out.println("║          🚢 COLOCAR DESTRUCTORES     ║");
+            System.out.println("╚══════════════════════════════════════╝");
+            System.out.println(Colores.RESET);
+
+            System.out.println(Colores.CYAN + "Ingresa las coordenadas de tus 3 destructores (2 casillas)" + Colores.RESET);
             while(!terminarCoordenadas){
                 System.out.println("Rango de coordenadas del destructor " + (contadorEmbarcaciones + 1));
-                System.out.printf("Fila inicial: ");
-                x1 = sc.nextInt();
-                System.out.printf("Columna inicial: ");
-                y1 = sc.nextInt();
-                System.out.printf("Fila final: ");
-                x2 = sc.nextInt();
-                System.out.printf("Columna final: ");
-                y2 = sc.nextInt();
+                x1 = validarNum(sc, "Fila inicial: ");
+                y1 = validarNum(sc, "Columna inicial: ");
+                x2 = validarNum(sc, "Fila final: ");
+                y2 = validarNum(sc, "Columna final: ");
 
                 if (!Embarcacion.validaciones(x1, y1, x2, y2, 2, "destructor", ocupado)) {
                     continue;
@@ -119,17 +139,19 @@ public class Cliente {
 
             //REGISTRAR CRUCEROS
             //------------------------------------------------------------------------------------------------------------------
-            System.out.println("Ingresa las coordenadas de tus 2 cruceros (3 casillas de longitud");
+            System.out.println(Colores.MAGENTA + Colores.NEGRITA);
+            System.out.println("╔══════════════════════════════════════╗");
+            System.out.println("║           🚢 COLOCAR CRUCEROS        ║");
+            System.out.println("╚══════════════════════════════════════╝");
+            System.out.println(Colores.RESET);
+
+            System.out.println(Colores.CYAN + "Ingresa las coordenadas de tus 2 cruceros (3 casillas)" + Colores.RESET);
             while (!terminarCoordenadas){
                 System.out.println("Rango de coordenadas del crucero " + (contadorEmbarcaciones + 1));
-                System.out.printf("Fila inicial: ");
-                x1 = sc.nextInt();
-                System.out.printf("Columna inicial: ");
-                y1 = sc.nextInt();
-                System.out.printf("Fila final: ");
-                x2 = sc.nextInt();
-                System.out.printf("Columna final: ");
-                y2 = sc.nextInt();
+                x1 = validarNum(sc, "Fila inicial: ");
+                y1 = validarNum(sc, "Columna inicial: ");
+                x2 = validarNum(sc, "Fila final: ");
+                y2 = validarNum(sc, "Columna final: ");
 
                 if (!Embarcacion.validaciones(x1, y1, x2, y2, 3, "crucero", ocupado)) {
                     continue;
@@ -152,15 +174,17 @@ public class Cliente {
             //REGISTRAR ACORAZADO
             //------------------------------------------------------------------------------------------------------------------
             do {
-                System.out.println("Ingresa las coordenadas de tu acorazado (4 casillas de longitud)");
-                System.out.printf("Fila inicial: ");
-                x1 = sc.nextInt();
-                System.out.printf("Columna inicial: ");
-                y1 = sc.nextInt();
-                System.out.printf("Fila final: ");
-                x2 = sc.nextInt();
-                System.out.printf("Columna final: ");
-                y2 = sc.nextInt();
+                System.out.println(Colores.ROJO + Colores.NEGRITA);
+                System.out.println("╔══════════════════════════════════════╗");
+                System.out.println("║          🚢 COLOCAR ACORAZADO        ║");
+                System.out.println("╚══════════════════════════════════════╝");
+                System.out.println(Colores.RESET);
+
+                System.out.println(Colores.CYAN + "Ingresa las coordenadas de tu acorazado (4 casillas)" + Colores.RESET);
+                x1 = validarNum(sc, "Fila inicial: ");
+                y1 = validarNum(sc, "Columna inicial: ");
+                x2 = validarNum(sc, "Fila final: ");
+                y2 = validarNum(sc, "Columna final: ");
             }while (!Embarcacion.validaciones(x1, y1, x2, y2, 4, "acorazado", ocupado));
             //------------------------------------------------------------------------------------------------------------------
 
@@ -169,7 +193,11 @@ public class Cliente {
             misEmbarcaciones.add(aco);
             Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
-            System.out.println("Has terminado de colocar tus embarcaciones. Escribe [listo] cuando estes listo para iniciar");
+            System.out.println(Colores.AMARILLO + Colores.NEGRITA +
+                            "╔══════════════════════════════════════════╗\n" +
+                            "║         FLOTA COMPLETADA    😼           ║\n" +
+                            "╚══════════════════════════════════════════╝\n" +
+                    Colores.RESET + Colores.AMARILLO + "Escribe [listo] cuando estés preparado para iniciar." + Colores.RESET);
             sc.nextLine();
             String avisoListo = sc.nextLine().trim().toLowerCase();
             dos.writeUTF(avisoListo);
@@ -177,14 +205,15 @@ public class Cliente {
 
             System.out.println("Calculando quien empieza...");
             int turnoAleatorio = dis.readInt();
-
             if (turnoAleatorio == 0){
-                System.out.println("La PC tira primero");
+                System.out.println(Colores.AMARILLO + "━━━━━━━━━━━━━ 🤖 La PC tira primero ━━━━━━━━━━━━━" + Colores.RESET);
+
                 miTurno = false;
             }else {
-                System.out.println("Tu tiras primero");
+                System.out.println(Colores.MAGENTA + "━━━━━━━━━━━ ⚔ Tu tiras primero ━━━━━━━━━━━" + Colores.RESET);
                 miTurno = true;
             }
+            Sonidos.sonidoFondo("Practica1_Batalla_Naval/src/sonido/fondo.wav");
 
             while(!terminarJuego){
                 if (!miTurno){
@@ -236,10 +265,15 @@ public class Cliente {
                     int tiroFila = 0, tiroColumna = 0;
 
                     while (!tiroCorrecto) {
-                        System.out.print("Ingresa la fila de tiro: ");
-                        tiroFila = sc.nextInt();
-                        System.out.print("Ingresa la columna de tiro: ");
-                        tiroColumna = sc.nextInt();
+                        System.out.println();
+                        System.out.println(Colores.CYAN + Colores.NEGRITA);
+                        System.out.println("╔══════════════════════════════════════╗");
+                        System.out.println("║             🎯 TU TURNO              ║");
+                        System.out.println("╚══════════════════════════════════════╝");
+                        System.out.println(Colores.RESET);
+                        tiroFila = validarNum(sc, "Ingresa la fila de tiro: ");
+                        tiroColumna = validarNum(sc, "Ingresa la columna de tiro: ");
+                        Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/disparo.wav");
 
                         if (tiroFila < 0 || tiroFila > 9 || tiroColumna < 0 || tiroColumna > 9) {
                             System.out.println("Error: Coordenada fuera de rango (0-9)");
@@ -283,21 +317,33 @@ public class Cliente {
                     Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
                     if (golpeado) {
-                        System.out.println("Golpeaste a un " + barco + " en la coordenada (" + tiroFila + "," + tiroColumna + ")");
+                        Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/impacto.wav");
+                        System.out.println(Colores.ROJO + Colores.NEGRITA + "💥 ¡IMPACTO! " + Colores.RESET + "en (" + tiroFila + "," + tiroColumna + ")");
                         if (hundida) {
-                            System.out.println("Hundiste un " + barco);
+                            Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/hundido.wav");
+                            System.out.println(Colores.ROJO + Colores.NEGRITA + " 🔥☠ ¡HUNDIDO! " + barco + " " + Colores.RESET);
                         }
                         contadorImpactos++;
                         if (!fin && contadorImpactos < 3) {
                             System.out.println("Tira de nuevo");
                         }
                     } else {
-                        System.out.println("Tiro fallado");
-                        System.out.println("Turno de la PC");
+                        Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/agua.wav");
+                        System.out.println(Colores.AZUL + Colores.NEGRITA + "\n🌊 ¡La PC ha fallado su tiro! 🌊" + Colores.RESET);
+
+                        System.out.println(Colores.AMARILLO + "━━━━━━━━━━━━━ 🤖 Turno de la PC ━━━━━━━━━━━━━" + Colores.RESET);
                     }
 
                     if (fin){
-                        System.out.println("Has ganado");
+                        Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/ganador.wav");
+                        System.out.println(Colores.VERDE + Colores.NEGRITA);
+                        System.out.println("  ██╗   ██╗██╗ ██████╗████████╗ ██████╗ ██████╗ ██╗ █████╗ ");
+                        System.out.println("  ██║   ██║██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗██║██╔══██╗");
+                        System.out.println("  ██║   ██║██║██║        ██║   ██║   ██║██████╔╝██║███████║");
+                        System.out.println("  ╚██╗ ██╔╝██║██║        ██║   ██║   ██║██╔══██╗██║██╔══██║");
+                        System.out.println("   ╚████╔╝ ██║╚██████╗   ██║   ╚██████╔╝██║  ██║██║██║  ██║");
+                        System.out.println("    ╚═══╝  ╚═╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝");
+                        System.out.println(Colores.RESET);
                         terminarJuego = true;
                     }
 
