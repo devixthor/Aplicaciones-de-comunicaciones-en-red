@@ -173,12 +173,11 @@ public class Servidor {
                                 }
                             }else{
                                 Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/agua.wav");
-                                System.out.println(Colores.AZUL + Colores.NEGRITA + "\n🌊 ¡El usuario ha fallado su tiro! 🌊" + Colores.RESET);
+                                System.out.println(Colores.AZUL + Colores.NEGRITA + "\n ¡El usuario ha fallado su tiro! 🌊" + Colores.RESET);
                             }
 
                             if(todasHundidas){
                                 System.out.println(Colores.VERDE + Colores.NEGRITA);
-// FIN
                                 System.out.println("███████╗██╗███╗   ██╗");
                                 System.out.println("██╔════╝██║████╗  ██║");
                                 System.out.println("█████╗  ██║██╔██╗ ██║");

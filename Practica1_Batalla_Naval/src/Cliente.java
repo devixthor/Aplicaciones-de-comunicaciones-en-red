@@ -199,7 +199,14 @@ public class Cliente {
                             "╚══════════════════════════════════════════╝\n" +
                     Colores.RESET + Colores.AMARILLO + "Escribe [listo] cuando estés preparado para iniciar." + Colores.RESET);
             sc.nextLine();
-            String avisoListo = sc.nextLine().trim().toLowerCase();
+            String avisoListo;
+            do {
+                avisoListo = sc.nextLine().trim().toLowerCase();
+                if(!avisoListo.equals("listo")){
+                    System.out.println(Colores.ROJO + "Opción incorrecta" + Colores.RESET);
+                    System.out.println(Colores.AMARILLO + "Escribe [listo]: " + Colores.RESET);
+                }
+            }while (!avisoListo.equals("listo"));
             dos.writeUTF(avisoListo);
             dos.flush();
 
@@ -232,7 +239,6 @@ public class Cliente {
                             break;
                         }
                     }
-
                     miTablero.registrarSimbolo(filaTiroRecibido, colTiroRecibido, tiroAcertado ? "X" : "O");
 
                     boolean hundida = tiroAcertado && embarcacionGolpeada.esHundido();
@@ -251,6 +257,21 @@ public class Cliente {
                     Tablero.imprmirTableros(miTablero.actualizarTablero(), misTiros.actualizarTablero());
 
                     if(todasHundidas){
+                        System.out.println(Colores.VERDE + Colores.NEGRITA);
+                        System.out.println("███████╗██╗███╗   ██╗");
+                        System.out.println("██╔════╝██║████╗  ██║");
+                        System.out.println("█████╗  ██║██╔██╗ ██║");
+                        System.out.println("██╔══╝  ██║██║╚██╗██║");
+                        System.out.println("██║     ██║██║ ╚████║");
+                        System.out.println("╚═╝     ╚═╝╚═╝  ╚═══╝");
+                        System.out.println();
+                        System.out.println("     ██╗██╗   ██╗███████╗ ██████╗  ██████╗ ");
+                        System.out.println("     ██║██║   ██║██╔════╝██╔════╝ ██╔═══██╗");
+                        System.out.println("     ██║██║   ██║█████╗  ██║  ███╗██║   ██║");
+                        System.out.println("██   ██║██║   ██║██╔══╝  ██║   ██║██║   ██║");
+                        System.out.println("╚█████╔╝╚██████╔╝███████╗╚██████╔╝╚██████╔╝");
+                        System.out.println(" ╚════╝  ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ");
+                        System.out.println(Colores.RESET);
                         System.out.printf("Ha ganado la PC");
                         terminarJuego = true;
                     }else{
@@ -329,7 +350,7 @@ public class Cliente {
                         }
                     } else {
                         Sonidos.reproducir("Practica1_Batalla_Naval/src/sonido/agua.wav");
-                        System.out.println(Colores.AZUL + Colores.NEGRITA + "\n🌊 ¡La PC ha fallado su tiro! 🌊" + Colores.RESET);
+                        System.out.println(Colores.AZUL + Colores.NEGRITA + "\n¡La PC ha fallado su tiro! 🌊" + Colores.RESET);
 
                         System.out.println(Colores.AMARILLO + "━━━━━━━━━━━━━ 🤖 Turno de la PC ━━━━━━━━━━━━━" + Colores.RESET);
                     }
