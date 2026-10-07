@@ -89,7 +89,7 @@ public class Embarcacion {
         return tipoEmbarcacion;
     }
 
-    static boolean validaciones(int x1, int y1, int x2, int y2, int longitud, String nombre, boolean ocupado[][]) {
+    static boolean validaciones(int x1, int y1, int x2, int y2, int longitud, boolean ocupado[][]) {
 
         if (x1 < 0 || x1 >= 10 || x2 < 0 || x2 >= 10 || y1 < 0 || y1 >= 10 || y2 < 0 || y2 >= 10) {
             System.out.println("Fuera de rango del tablero.");
