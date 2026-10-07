@@ -54,13 +54,16 @@ public class Servidor {
                 System.out.println("╚══════════════════════════════════════════╝");
                 System.out.println(Colores.RESET);
 
+                DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
+                DataInputStream dis = new DataInputStream(cl.getInputStream());
+                String nombreJugador = dis.readUTF();
+
                 System.out.println(Colores.CYAN + "Dirección: " + cl.getInetAddress() + Colores.RESET);
+                System.out.println("El retador se llama: " + nombreJugador);
+
                 System.out.println(Colores.AMARILLO + " Generando tablero aleatorio..." + Colores.RESET);
                 String mensajeBienvenida = "Bienvenido a batalla naval";
                 String mensajeTablero = "Acomoda tus tripulaciones en el tablero de la izquierda ↙️";
-
-                DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
-                DataInputStream dis = new DataInputStream(cl.getInputStream());
 
                 dos.writeUTF(mensajeBienvenida);
                 dos.writeUTF(mensajeTablero);
@@ -68,14 +71,7 @@ public class Servidor {
 
                 // LLENADO ALEATORIO DE TABLERO
                 //-------------------------------------------------------------
-                int filaSubRandom = random.nextInt(10);
-                int colSubRandom = random.nextInt(10);
-                Embarcacion subRandom = new Embarcacion("Submarino");
-                subRandom.agregarCoordenadas(filaSubRandom, colSubRandom);
-                embarcacionesAleatorias.add(subRandom);
-                ocupado[filaSubRandom][colSubRandom] = true;
-                tableroServidor.registrarSimbolo(filaSubRandom, colSubRandom, "S");
-
+                embarcacionesAleatorias.add(Tablero.llenarEmbarcacionAleatoria("Submarino", 5, tableroServidor, "S", ocupado));
                 for (i = 0; i < 3; i++) {
                     embarcacionesAleatorias.add(Tablero.llenarEmbarcacionAleatoria("Destructor", 2, tableroServidor, "D", ocupado));
                 }
