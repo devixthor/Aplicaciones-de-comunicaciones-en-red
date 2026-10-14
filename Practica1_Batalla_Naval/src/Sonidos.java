@@ -8,11 +8,9 @@ public class Sonidos {
     public static void reproducir(String archivo) {
         try {
             AudioInputStream audio =  AudioSystem.getAudioInputStream(new File(archivo));
-
             Clip clip = AudioSystem.getClip();
             clip.open(audio);
             clip.start();
-
         } catch (Exception e) {
             System.out.println("No se pudo reproducir el sonido.");
         }
