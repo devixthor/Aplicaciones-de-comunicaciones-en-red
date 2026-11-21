@@ -1,6 +1,7 @@
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 public class MetodoPost implements MetodoHttp {
@@ -8,6 +9,7 @@ public class MetodoPost implements MetodoHttp {
     public void atender(String line, BufferedReader br, PrintWriter pw, BufferedOutputStream bos) throws Exception {
         int contentLength = 0;
         String headerLine = "", length = "";
+        String body = "";
         int totalBytes = 0;
         char[] buff;
         int leidos;
@@ -30,21 +32,20 @@ public class MetodoPost implements MetodoHttp {
                 }
             }
 
-            String body = new String(buff, 0, totalBytes);
+            body = new String(buff, 0, totalBytes);
             if (body.contains("&")) {
                 StringTokenizer tokens = new StringTokenizer(body, "&");
                 while (tokens.hasMoreTokens()) {
+                    java.net.URLDecoder.decode(tokens.nextToken(), StandardCharsets.UTF_8);
                     System.out.println("Tokens: " + tokens.nextToken());
                 }
-            } else {
-                pw.println("HTTP/1.0 200 OK");
-                pw.flush();
-                pw.println("Content-Type: text/html; charset=UTF-8");
-                pw.flush();
-                pw.println();
-                pw.println(body);
-                pw.flush();
             }
         }
+        pw.println("HTTP/1.0 200 OK");
+        pw.flush();
+        pw.println("Content-Type: text/html; charset=UTF-8");
+        pw.println();
+        pw.println("<h1>POST recibido</h1><p>" + body + "</p>");
+        pw.flush();
     }
 }

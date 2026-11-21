@@ -1,12 +1,11 @@
 import java.io.*;
 import java.util.Date;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class MetodoGet implements MetodoHttp {
     @Override
     public void atender(String line, BufferedReader br, PrintWriter pw, BufferedOutputStream bos) throws Exception {
-
-
         if (!line.contains("?")) {
             String fileName = getArch(line);
             if (fileName == null || fileName.isEmpty()) {
@@ -36,6 +35,36 @@ public class MetodoGet implements MetodoHttp {
         }
     }
 
+    private static final Map<String, String> MIME_TYPES = Map.ofEntries(
+            Map.entry("html", "text/html"),
+            Map.entry("htm", "text/html"),
+            Map.entry("css", "text/css"),
+            Map.entry("js", "application/javascript"),
+            Map.entry("json", "application/json"),
+            Map.entry("txt", "text/plain"),
+            Map.entry("png", "image/png"),
+            Map.entry("jpg", "image/jpeg"),
+            Map.entry("jpeg", "image/jpeg"),
+            Map.entry("gif", "image/gif"),
+            Map.entry("svg", "image/svg+xml"),
+            Map.entry("ico", "image/x-icon"),
+            Map.entry("pdf", "application/pdf"),
+            Map.entry("mp3", "audio/mpeg"),
+            Map.entry("mp4", "video/mp4")
+    );
+
+    private String obtenerMimeType (String nombreArchivo) {
+        int punto = nombreArchivo.lastIndexOf('.');
+        if(punto != -1 && punto < nombreArchivo.length() - 1){
+            String extension = nombreArchivo.substring(punto + 1).toLowerCase();
+            if(MIME_TYPES.containsKey(extension)){
+                return MIME_TYPES.get(extension);
+            }
+        }
+        String otroMime = java.net.URLConnection.guessContentTypeFromName(nombreArchivo);
+        return (otroMime != null) ? otroMime: "application/octet-stream";
+    }
+
     public String getArch(String line) {
         int i;
         int f;
@@ -48,16 +77,18 @@ public class MetodoGet implements MetodoHttp {
     }
 
     private File resolverArchivo(String arg) {
+        if(arg.contains("..")){
+            System.out.println("Accion no permitida");
+        }
         File archivo = new File(arg);
         if (!archivo.exists()) {
-            File enModulo = new File("Practica2_Servidor_HTTP", arg);
+            File enModulo = new File("Practica2_Servidor_HTTP/Recursos_Servidor", arg);
             if (enModulo.exists()) {
                 return enModulo;
             }
         }
         return archivo;
     }
-
 
     public void SendA(String arg, BufferedOutputStream bos) {
         try {
@@ -78,7 +109,7 @@ public class MetodoGet implements MetodoHttp {
             sb = sb + "HTTP/1.0 200 ok\n";
             sb = sb + "Server: Servidor/1.0 \n";
             sb = sb + "Date: " + new Date() + " \n";
-            sb = sb + "Content-Type: text/html \n";
+            sb = sb + "Content-Type: " + obtenerMimeType(arg) + "\n";
             sb = sb + "Content-Length: " + tam_archivo + " \n";
             sb = sb + "\n";
             bos.write(sb.getBytes());

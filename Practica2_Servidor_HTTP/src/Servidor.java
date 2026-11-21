@@ -33,7 +33,7 @@ public class Servidor {
                     return;
                 }
 
-                System.out.println("\n Cliente conectado desde: " + socket.getInetAddress() + "mediante el puerto: " + socket.getPort());
+                System.out.println("\n Cliente conectado desde: " + socket.getInetAddress() + " mediante el puerto: " + socket.getPort());
                 System.out.println("Datos: " + line);
 
                 String metodo = line.split(" ")[0].toUpperCase();
