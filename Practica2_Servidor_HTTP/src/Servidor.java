@@ -13,6 +13,7 @@ public class Servidor {
         protected BufferedOutputStream bos;
         protected BufferedReader br;
         protected String FileName;
+        protected InputStream in;
 
         public Manejador(Socket _socket) throws Exception {
             this.socket = _socket;
@@ -23,7 +24,8 @@ public class Servidor {
                 br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 bos = new BufferedOutputStream(socket.getOutputStream());
                 pw = new PrintWriter(new OutputStreamWriter(bos));
-                String line = br.readLine();
+                in = socket.getInputStream();
+                String line = leerLinea(in);
 
                 if (line == null) {
                     pw.print("<html><head><title>Servidor WEB");
@@ -39,7 +41,7 @@ public class Servidor {
                 String metodo = line.split(" ")[0].toUpperCase();
                 MetodoHttp manejador = metodos.get(metodo);
                 if (manejador != null) {
-                    manejador.atender(line, br, pw, bos);
+                    manejador.atender(line, in, pw, bos);
                 } else {
                     pw.println("HTTP/1.0 501 Not Implemented");
                     pw.println();
@@ -71,6 +73,17 @@ public class Servidor {
             Socket accept = ss.accept();
             new Manejador(accept).start();
         }
+    }
+
+    public static String leerLinea(InputStream in) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int b;
+        while ((b = in.read()) != -1) {
+            if (b == '\n') break;
+            if (b != '\r') baos.write(b);
+        }
+        if (b == -1 && baos.size() == 0) return null;
+        return baos.toString("UTF-8");
     }
 
     public static void main(String[] args) throws Exception {

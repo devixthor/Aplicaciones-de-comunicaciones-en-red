@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 
 public class MetodoGet implements MetodoHttp {
     @Override
-    public void atender(String line, BufferedReader br, PrintWriter pw, BufferedOutputStream bos) throws Exception {
+    public void atender(String line, InputStream in, PrintWriter pw, BufferedOutputStream bos) throws Exception {
         if (!line.contains("?")) {
             String fileName = getArch(line);
             if (fileName == null || fileName.isEmpty()) {

@@ -1,13 +1,14 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class MetodoPut implements MetodoHttp {
     @Override
-    public void atender(String line, BufferedReader br, PrintWriter pw, BufferedOutputStream bos) throws Exception {
+    public void atender(String line, InputStream in, PrintWriter pw, BufferedOutputStream bos) throws Exception {
         int contentLength = 0;
         String fileName = getArchivo(line);
         String body = "", headerLine = "", length = "";
         int totalBytes = 0;
-        char[] buff;
+        byte[] buff;
         int leidos;
 
         if (fileName == null || fileName.isEmpty() || fileName.contains("..")) {
@@ -17,25 +18,25 @@ public class MetodoPut implements MetodoHttp {
             return;
         }
 
-        while ((headerLine = br.readLine()) != null && !headerLine.isEmpty()) {
+        while ((headerLine = Servidor.leerLinea(in)) != null && !headerLine.isEmpty()) {
             if (headerLine.toLowerCase().startsWith("content-length:")) {
                 length = headerLine.substring(headerLine.indexOf(":") + 1).trim();
                 contentLength = Integer.parseInt(length);
             }
         }
         if (contentLength > 0) {
-            buff = new char[contentLength];
+            buff = new byte[contentLength];
             while (totalBytes < contentLength) {
                 try {
-                    leidos = br.read(buff, totalBytes, contentLength - totalBytes);
+                    leidos = in.read(buff, totalBytes, contentLength - totalBytes);
                     if (leidos == -1) break;
                     totalBytes += leidos;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            body = new String(buff, 0, totalBytes);
-            resolverArchivo(fileName, body , pw);
+            body = new String(buff, 0, totalBytes, StandardCharsets.UTF_8);
+            resolverArchivo(fileName, body , pw, buff, totalBytes);
 
         }
     }
@@ -50,15 +51,15 @@ public class MetodoPut implements MetodoHttp {
         return "";
     }
 
-    private void resolverArchivo(String arg, String body, PrintWriter pw) {
+    private void resolverArchivo(String arg, String body, PrintWriter pw, byte[] buff, int totalBytes) {
         File carpeta = new File("Practica2_Servidor_HTTP/Recursos_Servidor");
         if (!carpeta.exists()) {
             carpeta = new File("Recursos_Servidor");
         }
         File archivo = new File(carpeta, arg);
         boolean existe = archivo.exists();
-        try (FileWriter fw = new FileWriter(archivo)){
-            fw.write(body);
+        try (FileOutputStream fos = new FileOutputStream(archivo)){
+            fos.write(buff, 0, totalBytes);
         } catch (Exception e){
             e.printStackTrace();
         }
