@@ -1,9 +1,14 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Servidor {
     public static final int PUERTO = 8000;
+    ExecutorService pool = Executors.newFixedThreadPool(100);
     ServerSocket ss;
     Map<String, MetodoHttp> metodos = new HashMap<>();
 
@@ -65,13 +70,14 @@ public class Servidor {
         metodos.put("GET", new MetodoGet());
         metodos.put("POST", new MetodoPost());
         metodos.put("PUT", new MetodoPut());
+        metodos.put("DELETE", new MetodoDelete());
         System.out.println("Iniciando Servidor.......");
         this.ss = new ServerSocket(PUERTO);
         System.out.println("Servidor iniciado:");
         System.out.println("Esperando por Cliente....");
         for (; ; ) {
             Socket accept = ss.accept();
-            new Manejador(accept).start();
+            pool.execute(new Manejador(accept));
         }
     }
 
