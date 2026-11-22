@@ -36,8 +36,8 @@ public class MetodoPost implements MetodoHttp {
             if (body.contains("&")) {
                 StringTokenizer tokens = new StringTokenizer(body, "&");
                 while (tokens.hasMoreTokens()) {
-                    java.net.URLDecoder.decode(tokens.nextToken(), StandardCharsets.UTF_8);
-                    System.out.println("Tokens: " + tokens.nextToken());
+                    String token = java.net.URLDecoder.decode(tokens.nextToken(), StandardCharsets.UTF_8);
+                    System.out.println("Tokens: " + token);
                 }
             }
         }

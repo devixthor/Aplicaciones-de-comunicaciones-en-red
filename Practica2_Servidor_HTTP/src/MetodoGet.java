@@ -87,6 +87,7 @@ public class MetodoGet implements MetodoHttp {
                 return enModulo;
             }
         }
+
         return archivo;
     }
 
