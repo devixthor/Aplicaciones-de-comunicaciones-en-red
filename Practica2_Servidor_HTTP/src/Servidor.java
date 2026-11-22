@@ -62,6 +62,7 @@ public class Servidor {
     public Servidor() throws Exception {
         metodos.put("GET", new MetodoGet());
         metodos.put("POST", new MetodoPost());
+        metodos.put("PUT", new MetodoPut());
         System.out.println("Iniciando Servidor.......");
         this.ss = new ServerSocket(PUERTO);
         System.out.println("Servidor iniciado:");
