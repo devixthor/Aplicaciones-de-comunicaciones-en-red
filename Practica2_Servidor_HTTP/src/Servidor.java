@@ -40,7 +40,8 @@ public class Servidor {
                     return;
                 }
 
-                System.out.println("\n Cliente conectado desde: " + socket.getInetAddress() + " mediante el puerto: " + socket.getPort());
+                System.out.printf("Hilo" + Thread.currentThread().getName() + " | Datos: " + line);
+                System.out.println("\nCliente conectado desde: " + socket.getInetAddress() + " mediante el puerto: " + socket.getPort());
                 System.out.println("Datos: " + line);
 
                 String metodo = line.split(" ")[0].toUpperCase();
@@ -72,9 +73,9 @@ public class Servidor {
         metodos.put("PUT", new MetodoPut());
         metodos.put("DELETE", new MetodoDelete());
         System.out.println("Iniciando Servidor.......");
-        this.ss = new ServerSocket(PUERTO);
-        System.out.println("Servidor iniciado:");
-        System.out.println("Esperando por Cliente....");
+        this.ss = new ServerSocket(PUERTO, 500);
+        System.out.println("Servidor iniciado en el puerto " + PUERTO);
+        System.out.println("Esperando el mensaje de solicitud de un cliente....\n\n");
         for (; ; ) {
             Socket accept = ss.accept();
             pool.execute(new Manejador(accept));
