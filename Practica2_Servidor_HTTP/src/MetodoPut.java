@@ -19,6 +19,7 @@ public class MetodoPut implements MetodoHttp {
         }
 
         while ((headerLine = Servidor.leerLinea(in)) != null && !headerLine.isEmpty()) {
+            System.out.println(headerLine);
             if (headerLine.toLowerCase().startsWith("content-length:")) {
                 length = headerLine.substring(headerLine.indexOf(":") + 1).trim();
                 contentLength = Integer.parseInt(length);

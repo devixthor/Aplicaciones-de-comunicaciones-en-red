@@ -5,35 +5,41 @@ public class MetodoDelete implements MetodoHttp {
     @Override
     public void atender(String line, InputStream in, PrintWriter pw, BufferedOutputStream bos) throws Exception {
         String fileName = getArchivo(line);
-        if (fileName == null || fileName.isEmpty() ||fileName.contains("..")){
+        String headerLine;
+        while ((headerLine = Servidor.leerLinea(in)) != null && !headerLine.isEmpty()) {
+            System.out.println(headerLine);
+        }
+        if (fileName == null || fileName.isEmpty() || fileName.contains("..")) {
             pw.println("HTTP/1.0 400 solicitud incorrecta");
             pw.println();
             pw.flush();
             return;
         }
-        resolverArchivo(fileName,pw);
+        resolverArchivo(fileName, pw);
     }
-    public String getArchivo(String line){
+
+    public String getArchivo(String line) {
         int i, j;
-        if (line.toUpperCase().startsWith("DELETE")){
+        if (line.toUpperCase().startsWith("DELETE")) {
             i = line.indexOf("/");
             j = line.indexOf(" ", i);
-            return line.substring(i+1,j);
+            return line.substring(i + 1, j);
         }
         return "";
     }
 
-    private void resolverArchivo(String arg, PrintWriter pw) {        File carpeta = new File("Practica2_Servidor_HTTP/Recursos_Servidor");
+    private void resolverArchivo(String arg, PrintWriter pw) {
+        File carpeta = new File("Practica2_Servidor_HTTP/Recursos_Servidor");
         if (!carpeta.exists()) {
             carpeta = new File("Recursos_Servidor");
         }
         File archivo = new File(carpeta, arg);
         boolean existe = archivo.exists() && archivo.isFile();
         boolean eliminado = false;
-        if(existe){
+        if (existe) {
             try {
                 eliminado = archivo.delete();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

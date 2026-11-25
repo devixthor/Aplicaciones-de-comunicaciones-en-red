@@ -5,14 +5,16 @@ import java.util.StringTokenizer;
 public class MetodoPost implements MetodoHttp {
     @Override
     public void atender(String line, InputStream in, PrintWriter pw, BufferedOutputStream bos) throws Exception {
-        int contentLength = 0;
+        StringBuilder headers = new StringBuilder();
         String headerLine = "", length = "";
+        int contentLength = 0;
         String body = "";
         int totalBytes = 0;
         byte[] buff;
         int leidos;
 
         while ((headerLine = Servidor.leerLinea(in)) != null && !headerLine.isEmpty()) {
+            System.out.println(headerLine);
             if (headerLine.toLowerCase().startsWith("content-length:")) {
                 length = headerLine.substring(headerLine.indexOf(":") + 1).trim();
                 contentLength = Integer.parseInt(length);
