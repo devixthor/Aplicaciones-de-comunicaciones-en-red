@@ -1,19 +1,27 @@
 import java.io.*;
-import java.util.Date;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
 
 public class MetodoGet implements MetodoHttp {
     @Override
     public void atender(String line, InputStream in, PrintWriter pw, BufferedOutputStream bos) throws Exception {
+        StringBuilder headers = new StringBuilder();
+        String headerLine;
+        while ((headerLine = Servidor.leerLinea(in)) != null && !headerLine.isEmpty()) {
+            headers.append(headerLine).append("\n");
+        }
+        System.out.printf("Headers:\n " + headers);
+
+
         if (!line.contains("?")) {
             String fileName = getArch(line);
             if (fileName == null || fileName.isEmpty()) {
-                SendA("index.html", bos);
+                listaDinamica(bos);
             } else {
                 SendA(fileName, bos);
             }
-            System.out.println(fileName);
+            System.out.println("Archivo enviado: " + fileName + "\n");
         } else {
             StringTokenizer tokens = new StringTokenizer(line, "?");
             String req_a = tokens.nextToken();
@@ -53,16 +61,16 @@ public class MetodoGet implements MetodoHttp {
             Map.entry("mp4", "video/mp4")
     );
 
-    private String obtenerMimeType (String nombreArchivo) {
+    private String obtenerMimeType(String nombreArchivo) {
         int punto = nombreArchivo.lastIndexOf('.');
-        if(punto != -1 && punto < nombreArchivo.length() - 1){
+        if (punto != -1 && punto < nombreArchivo.length() - 1) {
             String extension = nombreArchivo.substring(punto + 1).toLowerCase();
-            if(MIME_TYPES.containsKey(extension)){
+            if (MIME_TYPES.containsKey(extension)) {
                 return MIME_TYPES.get(extension);
             }
         }
         String otroMime = java.net.URLConnection.guessContentTypeFromName(nombreArchivo);
-        return (otroMime != null) ? otroMime: "application/octet-stream";
+        return (otroMime != null) ? otroMime : "application/octet-stream";
     }
 
     public String getArch(String line) {
@@ -77,7 +85,7 @@ public class MetodoGet implements MetodoHttp {
     }
 
     private File resolverArchivo(String arg) {
-        if(arg.contains("..")){
+        if (arg.contains("..")) {
             System.out.println("Accion no permitida");
         }
         File archivo = new File(arg);
@@ -107,11 +115,12 @@ public class MetodoGet implements MetodoHttp {
             int tam_archivo = bis2.available();
 
             String sb = "";
-            sb = sb + "HTTP/1.0 200 ok\n";
-            sb = sb + "Server: Servidor/1.0 \n";
-            sb = sb + "Date: " + new Date() + " \n";
-            sb = sb + "Content-Type: " + obtenerMimeType(arg) + "\n";
-            sb = sb + "Content-Length: " + tam_archivo + " \n";
+            sb = sb + "HTTP/1.0 200 OK\r\n";
+            sb = sb + "Server: Servidor/1.0 \r\n";
+            sb = sb + "Date: " + new Date() + "\r\n";
+            sb = sb + "Content-Type: " + obtenerMimeType(arg) + "\r\n";
+            sb = sb + "Content-Length: " + tam_archivo + "\r\n";
+            sb = sb + "Connection: close\r\n";
             sb = sb + "\n";
             bos.write(sb.getBytes());
             bos.flush();
@@ -125,6 +134,40 @@ public class MetodoGet implements MetodoHttp {
             System.out.println(e.getMessage());
         }
 
+    }
+
+    public void listaDinamica(BufferedOutputStream bos) {
+        try {
+            File carpeta = new File("Practica2_Servidor_HTTP/Recursos_Servidor");
+            if (!carpeta.exists()) {
+                carpeta = new File("Recursos_Servidor");
+            }
+            StringBuilder listaHTML = new StringBuilder();
+            File[] archivos = carpeta.listFiles();
+            if (archivos != null) {
+                Arrays.sort(archivos, Comparator.comparing(File::getName));
+                for (File f : archivos) {
+                    if (f.isFile() && !f.getName().equals("index.html")) {
+                        String nombre = f.getName();
+                        listaHTML.append("<li><a href=\"").append(nombre).append("\">").append(nombre).append("</a></li>\n");
+                    }
+                }
+            }
+            File indexFile = resolverArchivo("index.html");
+            String plantilla = Files.readString(indexFile.toPath(), StandardCharsets.UTF_8);
+            String htmlFinal = plantilla.replace("<!-- LISTA_ARCHIVOS -->", listaHTML.toString());
+            byte[] bytes = htmlFinal.getBytes(StandardCharsets.UTF_8);
+            String headers = "HTTP/1.0 200 ok\n"
+                    + "Server: Servidor/1.0\n"
+                    + "Date: " + new Date() + "\n"
+                    + "Content-Type: text/html; charset=UTF-8\n"
+                    + "Content-Length: " + bytes.length + "\n\n";
+            bos.write(headers.getBytes(StandardCharsets.UTF_8));
+            bos.write(bytes);
+            bos.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
